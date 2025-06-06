@@ -1,0 +1,14 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ac-app-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ac-app
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1        # Maxim un pod peste numărul dorit
+      maxUnavailable: 0  # Niciun pod indisponibil în timpul actualizării
