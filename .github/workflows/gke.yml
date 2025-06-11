@@ -1,8 +1,63 @@
-name: Build and Deploy to GKE
+name: Build and Deploy to GKE            # Numele workflow-ului GitHub Actions
 
-on:
+on:                                     # Evenimentele care declanșează workflow-ul
   push:
     branches:
-      - main
-  workflow_dispatch:
+      - main                          # Rulează la fiecare push pe ramura 'main'
+  workflow_dispatch:                   # Permite declanșarea manuală din interfața GitHub
 
+jobs:
+  build:                             # Jobul de build
+    name: Build and Push Docker Image   # Numele afișat pentru job
+    runs-on: ubuntu-latest              # Rulează pe un runner Ubuntu actualizat
+    steps:
+      - uses: actions/checkout@v2        # Clonează codul sursă în runner
+
+      - name: Log in to Docker Hub       # Pas pentru autentificare la Docker Hub
+        uses: docker/login-action@v2     # Folosește acțiunea oficială pentru login
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}   # Username-ul stocat securizat
+          password: ${{ secrets.DOCKERHUB_TOKEN }}      # Token-ul (parola) stocat securizat
+
+      - name: Build and push Docker image    # Construiește și împinge imaginea Docker
+        uses: docker/build-push-action@v3   # Folosește acțiunea oficială de build & push
+        with:
+          context: .                        # Contextul de build (directorul curent)
+          push: true                       # Împinge imaginea după build
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/ac-app:${{ github.sha }}  # Tag-ul imaginii: username/repo:commitSHA
+
+  deploy:                            # Jobul de deploy (depinde de jobul build)
+    name: Deploy to GKE                # Numele afișat pentru jobul de deploy
+    needs: build                      # Se rulează doar după ce build s-a terminat cu succes
+    runs-on: ubuntu-latest            # Rulează pe un runner Ubuntu
+    env:                             # Variabile de mediu folosite în acest job
+      CLUSTER_NAME: ${{ secrets.GKE_CLUSTER_NAME }}          # Numele clusterului GKE, din secrete
+      CLUSTER_LOCATION: ${{ secrets.GKE_CLUSTER_LOCATION }}  # Zona/regiunea clusterului GKE
+
+    steps:
+      - uses: actions/checkout@v2      # Clonează codul sursă (din nou, pentru jobul deploy)
+
+      - name: Authenticate to GCP          # Autentificare la Google Cloud Platform
+        uses: google-github-actions/auth@v1   # Acțiune oficială pentru autentificare
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}   # Cheia JSON a contului de serviciu, din secrete
+
+      - name: Set up Cloud SDK               # Instalează și configurează gcloud CLI
+        uses: google-github-actions/setup-gcloud@v1  # Acțiune oficială pentru setup gcloud
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}  # ID-ul proiectului GCP
+          install_components: gke-gcloud-auth-plugin  # Instalează plugin-ul necesar autentificării GKE
+
+      - name: Get GKE credentials             # Obține acreditările clusterului GKE pentru kubectl
+        run: |
+          gcloud container clusters get-credentials $CLUSTER_NAME --region $CLUSTER_LOCATION --project ${{ secrets.GCP_PROJECT_ID }}
+
+      - name: Deploy Kubernetes manifests       # Aplică fișierele Kubernetes (deployment, service, hpa)
+        run: |
+          kubectl apply -f deployment.yaml
+          kubectl apply -f service.yaml
+          kubectl apply -f hpa.yaml
+
+      - name: Update Deployment image            # Actualizează imaginea containerului în Deployment
+        run: |
+          kubectl set image deployment/ac-app-deployment ac-app-container=${{ secrets.DOCKERHUB_USERNAME }}/ac-app:${{ github.sha }} --record
