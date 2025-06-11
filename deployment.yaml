@@ -1,14 +1,14 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: apps/v1               # Versiunea API-ului folosită pentru Deployment; apps/v1 este versiunea stabilă
+kind: Deployment                  # Tipul resursei Kubernetes - aici este un Deployment, care gestionează replicarea și actualizarea podurilor
 metadata:
-  name: ac-app-deployment
+  name: ac-app-deployment         # Numele deployment-ului; va apărea în comenzi și UI pentru identificare
 spec:
-  replicas: 1
-  selector:
+  replicas: 1                     # Numărul de poduri dorite (replicați); aici este setat 1, deci va rula un singur pod
+  selector:                       # Definește criteriile prin care Deployment-ul identifică podurile pe care le gestionează
     matchLabels:
-      app: ac-app
-  strategy:
-    type: RollingUpdate
+      app: ac-app                 # Selectează podurile care au eticheta (label) 'app=ac-app'
+  strategy:                       # Strategia de actualizare a podurilor atunci când se modifică imaginea sau configurarea
+    type: RollingUpdate           # Actualizarea se face treptat, cu înlocuirea podurilor unul câte unul (standard și sigur)
     rollingUpdate:
-      maxSurge: 1        # Maxim un pod peste numărul dorit
-      maxUnavailable: 0  # Niciun pod indisponibil în timpul actualizării
+      maxSurge: 1                 # Permite un singur pod suplimentar peste numărul dorit în timpul actualizării (crește temporar capacitatea)
+      maxUnavailable: 0           # Nu permite niciun pod indisponibil în timpul actualizării (asigură zero downtime)
