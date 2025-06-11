@@ -6,7 +6,7 @@ spec:
   selector:                       # Selectorul leagă acest serviciu de podurile care au eticheta specificată
     app: ac-app                   # Podurile care au label-ul 'app=ac-app' vor fi direcționate prin acest serviciu
   ports:                          # Lista de porturi prin care serviciul va fi accesibil
-    - protocol: TSP
+    - protocol: TCP
       port: 8080                 # Portul expus de Service (accesat din exterior sau din alte servicii/poduri)
       targetPort: 8080           # Portul de pe containerul din pod la care se face forward traficul
   type: LoadBalancer              # Tipul serviciului: creează un LoadBalancer extern (doar în cloud); expune aplicația public
