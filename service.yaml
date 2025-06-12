@@ -1,12 +1,12 @@
-apiVersion: v1                    # Versiunea API-ului Kubernetes folosită pentru această resursă; 'v1' este standard pentru Service
-kind: Service                     # Tipul resursei Kubernetes - aici este un 'Service', care expune aplicația în rețea
+apiVersion: v1
+kind: Service
 metadata:
-  name: ac-app-service            # Numele serviciului; folosit pentru a fi referit în cluster și în DNS intern
+  name: ac-app-service
 spec:
-  selector:                       # Selectorul leagă acest serviciu de podurile care au eticheta specificată
-    app: ac-app                   # Podurile care au label-ul 'app=ac-app' vor fi direcționate prin acest serviciu
-  ports:                          # Lista de porturi prin care serviciul va fi accesibil
+  selector:
+    app: ac-app
+  ports:
     - protocol: TCP
-      port: 8080                 # Portul expus de Service (accesat din exterior sau din alte servicii/poduri)
-      targetPort: 8080           # Portul de pe containerul din pod la care se face forward traficul
-  type: LoadBalancer              # Tipul serviciului: creează un LoadBalancer extern (doar în cloud); expune aplicația public
+      port: 8080
+      targetPort: 8080
+  type: LoadBalancer

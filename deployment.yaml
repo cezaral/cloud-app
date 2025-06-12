@@ -1,55 +1,32 @@
-apiVersion: apps/v1                     # Versiunea API utilizată pentru resursa Deployment
-kind: Deployment                        # Tipul de obiect Kubernetes: Deployment (gestionează replicarea podurilor)
+apiVersion: apps/v1
+kind: Deployment
 metadata:
-  name: ac-app-deployment               # Numele deployment-ului (unic în cadrul namespace-ului)
-
+  name: ac-app-deployment
 spec:
-  replicas: 1                           # Numărul dorit de instanțe (Pod-uri) ale aplicației
-
-  selector:                             # Definește cum găsește Deployment-ul podurile pe care le gestionează
+  replicas: 1
+  selector:
     matchLabels:
-      app: ac-app                       # Selectorul trebuie să se potrivească cu label-ul din template (mai jos)
-
-  strategy:                             # Strategie de actualizare a podurilor
-    type: RollingUpdate                 # Tipul de actualizare: RollingUpdate permite înlocuirea treptată
+      app: ac-app
+  strategy:
+    type: RollingUpdate
     rollingUpdate:
-      maxSurge: 1                       # Permite un pod suplimentar în timpul actualizării (1 peste `replicas`)
-      maxUnavailable: 0                 # Nu permite ca vreun pod existent să fie indisponibil în timpul update-ului
-
-  template:                             # Șablonul pentru crearea noilor Pod-uri
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
     metadata:
       labels:
-        app: ac-app                     # Label-ul podului (trebuie să corespundă cu selectorul de mai sus)
-
+        app: ac-app
     spec:
-      containers:                       # Lista containerelor ce vor rula în pod
-        - name: ac-app-container        # Numele containerului
-          image: ac-app:latest          # Imaginea Docker folosită (tag: latest)
-          imagePullPolicy: IfNotPresent # Rulează imaginea locală dacă există, altfel o descarcă
-
+      containers:
+        - name: ac-app-container
+          image: <DOCKERHUB_USERNAME>/ac-app:latest
+          imagePullPolicy: IfNotPresent
           ports:
-            - containerPort: 8080       # Expune portul 8080 în container (folosit de aplicație)
-
-          resources:                    # Setări pentru resursele rezervate și maxime
+            - containerPort: 8080
+          resources:
             requests:
-              cpu: "250m"               # Rezervează 250 milicore CPU (0.25 core)
-              memory: "256Mi"           # Rezervează 256 MiB de memorie
+              cpu: "250m"
+              memory: "256Mi"
             limits:
-              cpu: "500m"               # Maxim 500 milicore CPU
-              memory: "512Mi"           # Maxim 512 MiB memorie
-
-          # livenessProbe:             # (Comentat) Verifică dacă aplicația este vie (nu blocată)
-          #   httpGet:
-          #     path: /actuator/health # URL-ul apelat pentru verificare
-          #     port: 8080
-          #   initialDelaySeconds: 60  # Așteaptă 60 secunde înainte de prima verificare
-          #   periodSeconds: 10        # Verifică la fiecare 10 secunde
-          #   failureThreshold: 3      # După 3 eșecuri, podul va fi restartat
-
-          # readinessProbe:            # (Comentat) Verifică dacă aplicația e pregătită să accepte trafic
-          #   httpGet:
-          #     path: /actuator/health
-          #     port: 8080
-          #   initialDelaySeconds: 30  # Așteaptă 30 secunde înainte de prima verificare
-          #   periodSeconds: 5         # Verifică la fiecare 5 secunde
-          #   failureThreshold: 3      # După 3 eșecuri, podul este considerat "nepregătit"
+              cpu: "500m"
+              memory: "512Mi"

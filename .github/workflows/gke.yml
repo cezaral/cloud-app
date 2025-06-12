@@ -51,13 +51,11 @@ jobs:
       - name: Get GKE credentials             # Obține acreditările clusterului GKE pentru kubectl
         run: |
           gcloud container clusters get-credentials $CLUSTER_NAME --region $CLUSTER_LOCATION --project ${{ secrets.GCP_PROJECT_ID }}
-
       - name: Deploy Kubernetes manifests       # Aplică fișierele Kubernetes (deployment, service, hpa)
         run: |
           kubectl apply -f deployment.yaml
           kubectl apply -f service.yaml
           kubectl apply -f hpa.yaml
-
       - name: Update Deployment image            # Actualizează imaginea containerului în Deployment
         run: |
           kubectl set image deployment/ac-app-deployment ac-app-container=${{ secrets.DOCKERHUB_USERNAME }}/ac-app:${{ github.sha }} --record

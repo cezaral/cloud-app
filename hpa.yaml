@@ -1,18 +1,18 @@
-apiVersion: autoscaling/v2     # Specifică versiunea API-ului pentru autoscalare; v2 permite metrici avansate (ex: CPU, memorie, metrici personalizate)
-kind: HorizontalPodAutoscaler  # Definește tipul resursei Kubernetes - aici este un autoscalator orizontal (HPA)
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
 metadata:
-  name: ac-app-hpa             # Numele autoscalatorului, utilizat pentru identificare în cluster
+  name: ac-app-hpa
 spec:
-  scaleTargetRef:              # Specifică ce resursă va fi scalată de HPA
-    apiVersion: apps/v1        # Versiunea API-ului pentru resursa target (Deployment-ul)
-    kind: Deployment           # Tipul de resursă ce va fi scalată - în acest caz, un Deployment
-    name: ac-app-deployment    # Numele Deployment-ului care va fi scalat automat
-  minReplicas: 1               # Numărul minim de poduri care trebuie menținute, indiferent de utilizare
-  maxReplicas: 5               # Numărul maxim de poduri până la care se poate scala în sus
-  metrics:                     # Lista de metrici folosite pentru scalare
-    - type: Resource           # Tipul de metrică - aici este o resursă a podului (CPU)
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: ac-app-deployment
+  minReplicas: 1
+  maxReplicas: 5
+  metrics:
+    - type: Resource
       resource:
-        name: cpu              # Se monitorizează utilizarea CPU
+        name: cpu
         target:
-          type: Utilization    # Scalarea se face în funcție de procentul de utilizare
-          averageUtilization: 10  # Pragul de utilizare a CPU (în %) peste care se adaugă poduri suplimentare
+          type: Utilization
+          averageUtilization: 10
